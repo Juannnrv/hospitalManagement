@@ -16,13 +16,23 @@ const App = () => {
       specialty: "Cardiologist",
       time: "10:00 AM",
     },
+    {
+      id: 123456789,
+      name: "Gengar",
+      email: "gengar@example.com",
+      phone: "(603) 458-0123",
+      dateAdded: "24/07/2021",
+      status: "Approved",
+      specialty: "Dentist",
+      time: "11:00 AM",
+    }
   ];
 
   return (
     <div>
       <Navbar />
       <SubNavbar />
-      <div className="bg-color-7 p-16">
+      <div className="bg-color-7 p-16 h-[80vh]">
         <div className="bg-color-4 rounded-xl p-7">
           <DoctorListHeader />
           <DoctorTable doctors={doctors} />

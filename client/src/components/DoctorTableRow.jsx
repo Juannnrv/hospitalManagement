@@ -51,7 +51,7 @@ const DoctorTableRow = ({ doctor }) => {
         </span>
       </td>
       <td className="py-4 pr-4">
-        <img src={row} className="w-15 h-15"></img>
+        <img src={row} className="w-15 h-15 cursor-pointer"></img>
       </td>
     </tr>
   );
