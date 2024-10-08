@@ -6,23 +6,23 @@ import DoctorTable from "./components/DoctorTable";
 
 const App = () => {
   const doctors = [
-    // Aquí puedes agregar datos de prueba
     {
-      id: 1,
+      id: 87364523,
       name: "Brooklyn Simmons",
       email: "brooklyns@mail.com",
       phone: "(603) 555-0123",
       dateAdded: "21/12/2022",
-      status: "Approved",
+      status: "Declined",
+      specialty: "Cardiologist",
+      time: "10:00 AM",
     },
-    // Más doctores...
   ];
 
   return (
     <div>
       <Navbar />
       <SubNavbar />
-      <div className="bg-color-7 p-24">
+      <div className="bg-color-7 p-16">
         <div className="bg-color-4 rounded-xl p-7">
           <DoctorListHeader />
           <DoctorTable doctors={doctors} />
