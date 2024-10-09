@@ -1,17 +1,23 @@
 {
-  "name": "client",
+  "name": "hospitalManagement",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:back": "node --env-file .env --watch server.js",
+    "dev:front": "vite",
+    "dev": "concurrently \"npm run dev:front\" \"npm run dev:back\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "concurrently": "^9.0.1",
+    "express": "^4.21.1",
+    "mysql2": "^3.11.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sequelize": "^6.37.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
