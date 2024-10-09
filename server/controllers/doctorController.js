@@ -18,6 +18,15 @@ class DoctorController {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
+
+    static async createDoctor(req, res) {
+        try {
+            const result = await DoctorModel.createDoctor(req.body);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
 }
 
 module.exports = DoctorController;
