@@ -9,10 +9,10 @@ class DoctorModel {
 
       if (rows.length === 0) {
         return {
-            status: 404,
-            message: "Doctor not found",
+          status: 404,
+          message: "Doctor not found",
         };
-    }
+      }
 
       return {
         status: 200,
@@ -36,12 +36,12 @@ class DoctorModel {
         [id]
       );
 
-        if (rows.length === 0) {
-            return {
-                status: 404,
-                message: "Doctor not found",
-            };
-        }
+      if (rows.length === 0) {
+        return {
+          status: 404,
+          message: "Doctor not found",
+        };
+      }
 
       return {
         status: 200,
@@ -119,18 +119,18 @@ class DoctorModel {
     try {
       const editedDoctor = await this.getDoctorById(id);
 
+      const [rows, fields] = await this.db().query(
+        "DELETE FROM doctor WHERE id = ?",
+        [id]
+      );
+
       if (editedDoctor.data.length === 0) {
         return {
           status: 404,
           message: "Doctor not found",
         };
       }
-
-      const [rows, fields] = await this.db().query(
-        "DELETE FROM doctor WHERE id = ?",
-        [id]
-      );
-
+      
       return {
         status: 200,
         message: "Doctor deleted successfully",
