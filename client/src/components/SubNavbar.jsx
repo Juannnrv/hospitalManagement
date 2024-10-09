@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 const SubNavbar = () => {
-  const [activeSubNav, setActiveSubNav] = useState(null);
+  const [activeSubNav, setActiveSubNav] = useState(0);
   const subNavItems = ["Doctor", "Administration", "Accounts"];
 
   const handleClick = (index) => {

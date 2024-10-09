@@ -3,7 +3,7 @@ import Logo from "../assets/img/logo.svg";
 import Profile from "../assets/img/profile.svg";
 
 const Navbar = () => {
-  const [activeMenu, setActiveMenu] = useState(null);
+  const [activeMenu, setActiveMenu] = useState(0);
   const menuItems = ["Users", "Patients", "Hospitals", "Notice", "Help Center"];
 
   const handleClick = (index) => {
