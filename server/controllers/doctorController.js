@@ -27,6 +27,24 @@ class DoctorController {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
+
+    static async updateDoctor(req, res) {
+        try {
+            const result = await DoctorModel.updateDoctor(req.params.id, req.body);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
+
+    static async deleteDoctor(req, res) {
+        try {
+            const result = await DoctorModel.deleteDoctor(req.params.id);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
 }
 
 module.exports = DoctorController;
