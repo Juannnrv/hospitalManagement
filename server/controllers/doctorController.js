@@ -45,6 +45,24 @@ class DoctorController {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
+
+    static async createContactDoctor(req, res) {
+        try {
+            const result = await DoctorModel.createContactDoctor(req.body);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
+
+    static async deleteContactDoctor(req, res) {
+        try {
+            const result = await DoctorModel.deleteContactDoctor(req.params.id);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
 }
 
 module.exports = DoctorController;
