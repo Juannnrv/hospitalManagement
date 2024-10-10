@@ -5,12 +5,28 @@ class DoctorModel {
 
   static async getAllDoctors() {
     try {
-      const [rows, fields] = await this.db().query("SELECT * FROM doctor");
+      const query = `
+      SELECT 
+          d.id, d.name, d.email, d.phone, s.name AS specialty, 
+          d.gender, d.date_of_birth, d.license, d.status, dc.type, dc.contact
+        FROM 
+          doctor d
+        INNER JOIN 
+          specialty s
+        ON 
+          d.specialty_id = s.id
+		right join
+			doctor_contact dc
+            ON d.id = dc.doctor_id
+		
+      `;
+
+      const [rows, fields] = await this.db().query(query);
 
       if (rows.length === 0) {
         return {
           status: 404,
-          message: "Doctor not found",
+          message: "No doctors found",
         };
       }
 
@@ -31,10 +47,27 @@ class DoctorModel {
 
   static async getDoctorById(id) {
     try {
-      const [rows, fields] = await this.db().query(
-        "SELECT * FROM doctor WHERE id = ?",
-        [id]
-      );
+
+      const query = `
+      SELECT 
+        doctor.id, 
+        doctor.name,
+        doctor.email,
+        doctor.phone,
+        specialty.name AS specialty, 
+        doctor.gender,
+        doctor.date_of_birth,
+        doctor.license, 
+        doctor.status
+      FROM 
+        doctor
+      INNER JOIN 
+        specialty ON doctor.specialty_id = specialty.id
+      WHERE
+        doctor.id = ${id};
+      `;
+
+      const [rows, fields] = await this.db().query(query);
 
       if (rows.length === 0) {
         return {
@@ -130,7 +163,7 @@ class DoctorModel {
           message: "Doctor not found",
         };
       }
-      
+
       return {
         status: 200,
         message: "Doctor deleted successfully",

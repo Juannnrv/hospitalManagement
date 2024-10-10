@@ -1,8 +1,8 @@
 const { body, validationResult } = require('express-validator');
 
 const validateHospital = [
-    body("name").notEmpty().withMessage('Name is required'),
-    body("address").notEmpty().withMessage('Address is required'),
+    body("name").isString().notEmpty().withMessage('Name is required'),
+    body("address").isString().notEmpty().withMessage('Address is required'),
     async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
