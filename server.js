@@ -3,6 +3,7 @@ const cors = require('cors');
 const DatabaseDriver = require('./server/helpers/db');
 const  doctorRoutes  = require('./server/routes/doctorRoutes');
 const patientRoutes = require('./server/routes/patientRoutes');
+const hospitalRoutes = require('./server/routes/hospitalRoutes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ DatabaseDriver.getInstance();
 
 app.use('/doctors', doctorRoutes);
 app.use('/patients', patientRoutes);
+app.use('/hospitals', hospitalRoutes)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
