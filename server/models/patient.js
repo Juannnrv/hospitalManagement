@@ -1,6 +1,6 @@
 const DatabaseDriver = require("../helpers/db");
 
-class PatientModel extends DatabaseDriver {
+class PatientModel {
   static db = () => DatabaseDriver.getInstance().connection;
 
     static async getAllPatients() {
