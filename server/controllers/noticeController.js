@@ -28,6 +28,15 @@ class NoticeController {
         }
     }
 
+    static async updateNotice(req, res) {
+        try {
+            const result = await noticeModel.updateNotice(req.params.id, req.body);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
+
     static async deleteNotice(req, res) {
         try {
             const result = await noticeModel.deleteNotice(req.params.id);
