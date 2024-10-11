@@ -7,6 +7,7 @@ const hospitalRoutes = require('./server/routes/hospitalRoutes');
 const noticeRoutes = require('./server/routes/noticeRoutes');
 const populationRoutes = require('./server/routes/populationRoutes');
 const staffRoutes = require('./server/routes/staffRoutes');
+const accountRoutes = require('./server/routes/accountRoutes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/hospitals', hospitalRoutes)
 app.use('/notices', noticeRoutes);
 app.use('/populations', populationRoutes);
 app.use('/staff', staffRoutes);
+app.use('/accounts', accountRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
