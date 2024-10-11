@@ -8,18 +8,17 @@ class DoctorModel {
       const query = `SELECT 
         d.id, 
         d.name,
-        d.date_of_birth, 
-        s.name as specialty,
         d.gender,
+        d.email,
+        d.phone,
+        s.name as specialty,
+        d.date_of_birth,
         d.status,
-        d.license,
-        JSON_ARRAYAGG(JSON_OBJECT( dc.type, dc.contact)) AS contactos
+        d.license
       FROM 
         doctor d
-      LEFT JOIN 
-        doctor_contact dc ON d.id = dc.doctor_id
       INNER JOIN 
-	      specialty s ON d.specialty_id = s.id
+        specialty s ON d.specialty_id = s.id
       GROUP BY 
         d.id, d.name, d.date_of_birth, d.status
       ORDER BY 
@@ -55,20 +54,19 @@ class DoctorModel {
       const query = `SELECT 
         d.id, 
         d.name,
-        d.date_of_birth, 
-        s.name as specialty,
         d.gender,
+        d.email,
+        d.phone,
+        s.name as specialty,
+        d.date_of_birth,
         d.status,
-        d.license,
-        JSON_ARRAYAGG(JSON_OBJECT( dc.type, dc.contact)) AS contactos
+        d.license
       FROM 
         doctor d
-      LEFT JOIN 
-        doctor_contact dc ON d.id = dc.doctor_id
       INNER JOIN 
 	      specialty s ON d.specialty_id = s.id
-      WHERE
-        d.id = ${id}  
+      WHERE 
+        d.id = ${id}
       GROUP BY 
         d.id, d.name, d.date_of_birth, d.status
       ORDER BY 
@@ -109,8 +107,8 @@ class DoctorModel {
         status: 201,
         message: "Doctor created successfully",
         data: {
-          ...doctor,
           id: rows.insertId,
+          ...doctor,
         },
         info: rows,
       };
@@ -143,7 +141,10 @@ class DoctorModel {
       return {
         status: 200,
         message: "Doctor updated successfully",
-        data: editedDoctor.data[0],
+        data: {
+          id: editedDoctor.data[0].id,
+          ...doctor
+        },
         info: rows,
       };
     } catch (err) {
@@ -159,19 +160,29 @@ class DoctorModel {
   static async deleteDoctor(id) {
     try {
       const editedDoctor = await this.getDoctorById(id);
-
-      const [rows, fields] = await this.db().query(
-        "DELETE FROM doctor WHERE id = ?",
-        [id]
-      );
-
+  
       if (editedDoctor.data.length === 0) {
         return {
           status: 404,
           message: "Doctor not found",
         };
       }
-
+  
+      await this.db().query(
+        "DELETE FROM population WHERE doctor_id = ?",
+        [id]
+      );
+  
+      await this.db().query(
+        "DELETE FROM staff WHERE doctor_id = ?",
+        [id]
+      );
+  
+      const [rows, fields] = await this.db().query(
+        "DELETE FROM doctor WHERE id = ?",
+        [id]
+      );
+  
       return {
         status: 200,
         message: "Doctor deleted successfully",
@@ -187,67 +198,6 @@ class DoctorModel {
       };
     }
   }
-
-  static async createContactDoctor(doctorContact) {
-    try {
-      const doctor = await this.getDoctorById(doctorContact.doctor_id);
-      console.log(doctor);
-
-      if (doctor.data.length === 0) {
-        return {
-          status: 404,
-          message: "Doctor not found",
-        };
-      }
-
-      const [rows, fields] = await this.db().query(
-        `INSERT INTO doctor_contact (doctor_id, type, contact) VALUES (?, ?, ?)`,
-        [doctorContact.doctor_id, doctorContact.type, doctorContact.contact]
-      );
-
-      return {
-        status: 201,
-        message: "contact created successfully",
-        data: {
-          id: rows.insertId,
-          doctor: doctor.data[0].name,
-          type: doctorContact.type,
-          contact: doctorContact.contact,
-        },
-        info: rows,
-      };
-    } catch (err) {
-      console.error("Error while creating contact", err);
-      throw {
-        status: 500,
-        message: "Error while creating contact",
-        error: err.message,
-      };
-    }
-  }
-
-  static async deleteContactDoctor(id) {
-    try {
-
-      const [rows, fields] = await this.db().query(
-        "DELETE FROM doctor_contact WHERE doctor_id = ?",
-        [id]
-      );
-
-      return {
-        status: 200,
-        message: "Contact deleted successfully",
-        info: rows,
-      };
-    } catch (err) {
-      console.error("Error while deleting contact", err);
-      throw {
-        status: 500,
-        message: "Error while deleting contact",
-        error: err.message,
-      };
-    }
-  } 
 }
 
 module.exports = DoctorModel;

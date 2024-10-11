@@ -1,45 +1,45 @@
-const DoctorModel = require('../models/doctor');
+const PopulationModel = require("../models/population");
 
-class DoctorController {
-    static async getAllDoctors(req, res) {
+class PopulationController {
+    static async getNoAppointments(req, res) {
         try {
-            const result = await DoctorModel.getAllDoctors();
+            const result = await PopulationModel.getNoAppointments();
             res.status(result.status).json(result);
         } catch (err) {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
 
-    static async getDoctorById(req, res) {
+    static async getAllAppointments(req, res) {
         try {
-            const result = await DoctorModel.getDoctorById(req.params.id);
+            const result = await PopulationModel.getAllAppointments();
             res.status(result.status).json(result);
         } catch (err) {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
 
-    static async createDoctor(req, res) {
+    static async createAppointment(req, res) {
         try {
-            const result = await DoctorModel.createDoctor(req.body);
+            const result = await PopulationModel.createAppointment(req.body);
             res.status(result.status).json(result);
         } catch (err) {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
 
-    static async updateDoctor(req, res) {
+    static async updateAppointment(req, res) {
         try {
-            const result = await DoctorModel.updateDoctor(req.params.id, req.body);
+            const result = await PopulationModel.updateAppointment(req.params.id, req.body);
             res.status(result.status).json(result);
         } catch (err) {
             res.status(err.status).json({ message: err.message, error: err.error });
         }
     }
 
-    static async deleteDoctor(req, res) {
+    static async deleteAppointment(req, res) {
         try {
-            const result = await DoctorModel.deleteDoctor(req.params.id);
+            const result = await PopulationModel.deleteAppointment(req.params.id);
             res.status(result.status).json(result);
         } catch (err) {
             res.status(err.status).json({ message: err.message, error: err.error });
@@ -47,4 +47,4 @@ class DoctorController {
     }
 }
 
-module.exports = DoctorController;
+module.exports = PopulationController;

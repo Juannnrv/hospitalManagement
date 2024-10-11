@@ -69,6 +69,15 @@ class PatientController {
         }
       }
 
+    static async updatePatient(req, res) {
+        try {
+            const result = await PatientModel.updatePatient(req.params.id, req.body);
+            res.status(result.status).json(result);
+        } catch (err) {
+            res.status(err.status).json({ message: err.message, error: err.error });
+        }
+    }
+
     static async deletePatient(req, res) {
         try {
             const result = await PatientModel.deletePatient(req.params.id);

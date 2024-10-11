@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllPatients, getPatientById, createPatient, deletePatient } = require('../controllers/patientController');
+const { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient } = require('../controllers/patientController');
 const validatePatient = require('../validators/patientValidator');
 const patient = express.Router();
 
