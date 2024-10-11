@@ -186,8 +186,10 @@ class PatientModel {
     }
   }
 
-  static async createPatient(patient) {
+  static async createPatient(patient, file) {
     try {
+      patient.medical_history = file.path;
+
       const [rows, fields] = await this.db().query(
         "INSERT INTO patient SET ?",
         patient

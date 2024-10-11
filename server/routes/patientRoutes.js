@@ -1,6 +1,7 @@
 const express = require('express');
 const { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient } = require('../controllers/patientController');
 const validatePatient = require('../validators/patientValidator');
+const upload = require('../middleware/medicalHistory');
 const patient = express.Router();
 
 patient.get('/', getAllPatients);
