@@ -1,27 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import useFetch from "../hooks/useFetch";
+import AppointmentTable from "./AppointmentTable";
 import doctor from "../assets/img/doctor.svg";
-import DoctorTable from "./DoctorTable";
 
 const postData = async (url, data) => {
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
-  return response.json();
-};
-
-const updateData = async (url, data) => {
-  const response = await fetch(url, {
-    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
@@ -43,10 +27,10 @@ const specialtiesMap = {
   Dermatology: 5,
 };
 
-const DoctorListHeader = () => {
+const AppointmentListHeaders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const { data: doctors, loading, error } = useFetch("/doctors");
+  const { data: populations, loading, error } = useFetch("/populations/current");
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "male",
@@ -58,13 +42,6 @@ const DoctorListHeader = () => {
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
-  const [doctorList, setDoctorList] = useState([]);
-
-  useEffect(() => {
-    if (doctors) {
-      setDoctorList(doctors);
-    }
-  }, [doctors]);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
@@ -113,27 +90,10 @@ const DoctorListHeader = () => {
     };
 
     try {
-      const result = await postData(
-        "http://localhost:5000/doctors",
-        dataToSubmit
-      );
+      const result = await postData("http://localhost:5000/populations");
       console.log("Form data submitted:", result);
-
-      const newDoctor = {
-        id: result.data.id,
-        name: result.data.name,
-        gender: result.data.gender,
-        date_of_birth: result.data.date_of_birth,
-        license: result.data.license,
-        specialty_id: result.data.specialty_id,
-        phone: result.data.phone,
-        email: result.data.email,
-        status: result.data.status,
-      };
-
-      setDoctorList((prevDoctors) => [...prevDoctors, newDoctor]);
-
       handleCloseModal();
+      window.location.reload();
     } catch (error) {
       console.error("Error submitting form data:", error.message);
       try {
@@ -147,40 +107,6 @@ const DoctorListHeader = () => {
     }
   };
 
-  const handleDeleteDoctor = async (id) => {
-    try {
-      await fetch(`http://localhost:5000/doctors/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setDoctorList((prevDoctors) =>
-        prevDoctors.filter((doctor) => doctor.id !== id)
-      );
-    } catch (error) {
-      console.error("Error deleting doctor:", error.message);
-    }
-  };
-
-  const handleUpdateDoctor = async (id, updatedData) => {
-    try {
-      const result = await updateData(
-        `http://localhost:5000/doctors/${id}`,
-        updatedData
-      );
-
-      console.log("Doctor updated:", result);
-      setDoctorList((prevDoctors) =>
-        prevDoctors.map((doctor) =>
-          doctor.id === id ? { ...doctor, ...result.data } : doctor
-        )
-      );
-    } catch (error) {
-      console.error("Error updating doctor:", error.message);
-    }
-  };
-
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -190,9 +116,9 @@ const DoctorListHeader = () => {
         <div className="relative">
           <header className="flex justify-between items-center font-poppins font-medium mb-6">
             <div className="flex flex-col gap-1">
-              <h2 className="text-lg">List of Doctors</h2>
+              <h2 className="text-lg">Current Appointments</h2>
               <p className="text-[12px] text-black opacity-40">
-                {doctorList.length} available doctors
+                {populations.length} Appointments
               </p>
             </div>
             <button
@@ -200,15 +126,11 @@ const DoctorListHeader = () => {
               className="bg-color-2 text-white p-2 flex gap-2 py-3 px-5 font-semibold rounded-md"
             >
               <img src={doctor} alt="Doctor" />
-              Add new doctor
+              Add new Appointment
             </button>
           </header>
 
-          <DoctorTable
-            doctors={doctorList}
-            onDelete={handleDeleteDoctor}
-            onUpdate={handleUpdateDoctor}
-          />
+          <AppointmentTable appointments={populations}/>
 
           {isModalOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -263,7 +185,7 @@ const DoctorListHeader = () => {
                   </div>
                   <button
                     onClick={handleCloseModal}
-                    type="button"
+                    type="submit"
                     className="px-5 py-3 ml-auto bg-[#F64E60] text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
                   >
                     CLOSE
@@ -479,4 +401,4 @@ const DoctorListHeader = () => {
   );
 };
 
-export default DoctorListHeader;
+export default AppointmentListHeaders;

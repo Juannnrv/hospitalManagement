@@ -4,7 +4,7 @@ import Profile from "../assets/img/profile.svg";
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(0);
-  const menuItems = ["Users", "Patients", "Hospitals", "Notice", "Help Center"];
+  const menuItems = ["Specialist", "Center", "Bills"];
 
   const handleClick = (index) => {
     setActiveMenu(index);

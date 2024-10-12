@@ -1,7 +1,7 @@
 import React from "react";
 import DoctorTableRow from "./DoctorTableRow";
 
-const DoctorTable = ({ doctors }) => {
+const DoctorTable = ({ doctors, onDelete, onUpdate }) => {
   return (
     <table className="w-full">
       <thead>
@@ -19,7 +19,12 @@ const DoctorTable = ({ doctors }) => {
       </thead>
       <tbody>
         {doctors && doctors.map((doctor) => (
-          <DoctorTableRow key={doctor.id} doctor={doctor} />
+          <DoctorTableRow 
+            key={doctor.id} 
+            doctor={doctor} 
+            onDelete={onDelete} 
+            onUpdate={onUpdate} 
+          />
         ))}
       </tbody>
     </table>

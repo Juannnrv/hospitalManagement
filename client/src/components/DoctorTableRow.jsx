@@ -10,7 +10,15 @@ const specialtiesMap = {
   Dermatology: 5,
 };
 
-const DoctorTableRow = ({ doctor }) => {
+const specialtiesReverseMap = {
+  1: "Cardiology",
+  2: "Neurology",
+  3: "Pediatrics",
+  4: "Oncology",
+  5: "Dermatology",
+};
+
+const DoctorTableRow = ({ doctor, onDelete, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -18,7 +26,7 @@ const DoctorTableRow = ({ doctor }) => {
     gender: doctor.gender,
     dateOfJoining: doctor.date_of_birth.split('T')[0],
     license: doctor.license.replace("LIC", ""),
-    specialty: doctor.specialty,
+    specialty: specialtiesReverseMap[doctor.specialty_id],
     phone: doctor.phone,
     email: doctor.email,
     status: doctor.status,
@@ -81,17 +89,24 @@ const DoctorTableRow = ({ doctor }) => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to delete doctor");
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
       return await response.json();
     } catch (error) {
+      console.error(`Error in deleteDoctor: ${error.message}`);
       setSubmitError([{ msg: error.message }]);
     }
   };
 
   const handleDelete = async () => {
-    await deleteDoctor(doctor.id);
-    window.location.reload();
+    try {
+      await deleteDoctor(doctor.id);
+      console.log(`Calling onDelete for doctor ID: ${doctor.id}`);
+      onDelete(doctor.id);
+    } catch (error) {
+      console.error(`Error in handleDelete: ${error.message}`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -113,9 +128,9 @@ const DoctorTableRow = ({ doctor }) => {
       status: formData.status,
     };
 
-    await updateDoctor(doctor.id, dataToSubmit);
+    const updatedDoctor = await updateDoctor(doctor.id, dataToSubmit);
+    onUpdate(doctor.id, updatedDoctor.data);
     handleCloseModal();
-    window.location.reload();
   };
 
   const formatDate = (dateString) => {
