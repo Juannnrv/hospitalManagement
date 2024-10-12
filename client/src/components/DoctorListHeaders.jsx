@@ -92,6 +92,7 @@ const DoctorListHeader = () => {
       const result = await postData("http://localhost:5000/doctors", dataToSubmit);
       console.log("Form data submitted:", result);
       handleCloseModal();
+      window.location.reload();
     } catch (error) {
       console.error("Error submitting form data:", error.message);
       try {
