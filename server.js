@@ -12,6 +12,12 @@ const accountRoutes = require('./server/routes/accountRoutes');
 const app = express();
 
 app.use(express.json());
+app.use(cors(
+    {
+        origin: 'http://localhost:3000',
+        credentials: true
+    }
+))
 
 DatabaseDriver.getInstance();
 

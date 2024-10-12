@@ -3,15 +3,20 @@ import person from "../assets/img/person.svg";
 import row from "../assets/img/row.svg";
 
 const DoctorTableRow = ({ doctor }) => {
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
   return (
-    <tr key={doctor.id}>
+    <tr>
       <td className="py-4">
         <div className="flex items-center gap-3">
-          <img
-            src={person}
-            alt={doctor.name}
-            className="w-50 h-50 rounded-md"
-          />
+          <img src={person} alt={doctor.name} className="w-50 h-50 rounded-md" />
           <div>
             <div className="font-poppins font-semibold text-sm text-color-5">
               {doctor.name}
@@ -33,10 +38,7 @@ const DoctorTableRow = ({ doctor }) => {
       </td>
       <td className="py-4 pr-4">
         <div className="font-poppins font-semibold text-sm text-color-5">
-          {doctor.dateAdded}
-        </div>
-        <div className="text-[13px] text-black opacity-40 font-poppins font-medium">
-          {doctor.time}
+          {formatDate(doctor.date_of_birth)}
         </div>
       </td>
       <td className="py-4 pr-4">
@@ -51,7 +53,7 @@ const DoctorTableRow = ({ doctor }) => {
         </span>
       </td>
       <td className="py-4 pr-4">
-        <img src={row} className="w-15 h-15 cursor-pointer"></img>
+        <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" />
       </td>
     </tr>
   );

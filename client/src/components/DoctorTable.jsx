@@ -1,7 +1,13 @@
 import React from "react";
 import DoctorTableRow from "./DoctorTableRow";
+import useFetch from "../hooks/useFetch";
 
-const DoctorTable = ({ doctors }) => {
+const DoctorTable = () => {
+  const { data: doctors, loading, error } = useFetch("/doctors");
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
   return (
     <table className="w-full">
       <thead>
@@ -16,7 +22,7 @@ const DoctorTable = ({ doctors }) => {
         </tr>
       </thead>
       <tbody>
-        {doctors.map((doctor) => (
+        {doctors && doctors.map((doctor) => (
           <DoctorTableRow key={doctor.id} doctor={doctor} />
         ))}
       </tbody>
