@@ -31,6 +31,9 @@ const DoctorTableRow = ({ doctor }) => {
         {doctor.id}
       </td>
       <td className="font-poppins font-semibold text-sm text-color-5">
+        {doctor.gender}
+      </td>
+      <td className="font-poppins font-semibold text-sm text-color-5">
         {doctor.email}
       </td>
       <td className="font-poppins font-semibold text-sm text-color-5">
@@ -40,6 +43,9 @@ const DoctorTableRow = ({ doctor }) => {
         <div className="font-poppins font-semibold text-sm text-color-5">
           {formatDate(doctor.date_of_birth)}
         </div>
+      </td>
+      <td className="font-poppins font-semibold text-sm text-color-5">
+        {doctor.license}
       </td>
       <td className="py-4 pr-4">
         <span
@@ -52,8 +58,9 @@ const DoctorTableRow = ({ doctor }) => {
           {doctor.status}
         </span>
       </td>
-      <td className="py-4 pr-4">
+      <td className="flex py-4 pr-4">
         <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" />
+        <p className="mt-1 ml-2">🗑️</p>
       </td>
     </tr>
   );

@@ -13,7 +13,6 @@ const App = () => {
       <div className="bg-color-7 p-16 h-[80vh]">
         <div className="bg-color-4 rounded-xl p-7">
           <DoctorListHeader />
-          <DoctorTable />
         </div>
       </div>
     </div>
