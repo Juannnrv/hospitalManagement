@@ -22,7 +22,11 @@ const postData = async (url, data) => {
 const AppointmentListHeaders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [populations, setPopulations] = useState([]);
-  const { data: initialPopulations, loading, error } = useFetch("/populations/current");
+  const {
+    data: initialPopulations,
+    loading,
+    error,
+  } = useFetch("/populations/current");
   const { data: availablePatients } = useFetch("/populations");
   const { data: doctors } = useFetch("/doctors");
   const [formData, setFormData] = useState({
@@ -31,6 +35,7 @@ const AppointmentListHeaders = () => {
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
+  const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
     if (initialPopulations) {
@@ -43,6 +48,7 @@ const AppointmentListHeaders = () => {
     setIsModalOpen(false);
     setSubmitError([]);
     setValidationErrors({});
+    setCurrentStep(1);
   };
 
   const handleChange = (e) => {
@@ -50,16 +56,32 @@ const AppointmentListHeaders = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const validateForm = () => {
+  const validateForm = (step) => {
     const errors = {};
-    if (!formData.patient_id) errors.patient_id = "Patient ID is required";
-    if (!formData.doctor_id) errors.doctor_id = "Doctor ID is required";
+    if (step === 1) {
+      if (!formData.patient_id) errors.patient_id = "Patient ID is required";
+      if (!formData.doctor_id) errors.doctor_id = "Doctor ID is required";
+    }
     return errors;
+  };
+
+  const handleNextStep = () => {
+    const errors = validateForm(currentStep);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handlePreviousStep = () => {
+    setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validateForm();
+    const errors = validateForm(currentStep);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
@@ -71,10 +93,13 @@ const AppointmentListHeaders = () => {
     };
 
     try {
-      const result = await postData("http://localhost:5000/populations", dataToSubmit);
+      const result = await postData(
+        "http://localhost:5000/populations",
+        dataToSubmit
+      );
       console.log("Form data submitted:", result);
 
-      setPopulations((prevPopulations) => [...prevPopulations, result]);
+      setPopulations((prevPopulations) => [...prevPopulations, result.data]);
 
       handleCloseModal();
     } catch (error) {
@@ -89,6 +114,48 @@ const AppointmentListHeaders = () => {
       }
     }
   };
+
+  const handleDeletePopulation = async (id) => {
+    try {
+      await fetch(`http://localhost:5000/populations/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setPopulations((prevPopulations) =>
+        prevPopulations.filter((population) => population.id !== id)
+      );
+    } catch (error) {
+      console.error("Error deleting population:", error.message);
+    }
+  };
+
+  const handleUpdatePopulation = (id, updatedData) => {
+    console.log('Appointment ID:', id);
+    setPopulations((prevPopulations) => {
+      const updatedPopulations = prevPopulations.map((population) => {
+        console.log('Population Object:', population); // Imprimir el objeto population
+        if (population.id === id) {
+          return {
+            ...population,
+            ...updatedData,
+            id: population.id, // Asegúrate de mantener el id original
+            doctor: doctors.find(doc => doc.id === updatedData.doctor_id)?.name || population.doctor,
+            doctor_specialty: doctors.find(doc => doc.id === updatedData.doctor_id)?.specialty || population.doctor_specialty,
+            patient: availablePatients.find(pat => pat.id === updatedData.patient_id)?.name || population.patient,
+          };
+        }
+        return population;
+      });
+      console.log('Updated Populations:', updatedPopulations); // Verificar las poblaciones actualizadas
+      return updatedPopulations;
+    });
+  };
+
+  useEffect(() => {
+    console.log('Populations updated:', populations);
+  }, [populations]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -117,6 +184,8 @@ const AppointmentListHeaders = () => {
             appointments={populations}
             patients={availablePatients}
             doctors={doctors}
+            onDelete={handleDeletePopulation}
+            onUpdate={handleUpdatePopulation}
           />
 
           {isModalOpen && (
@@ -124,9 +193,32 @@ const AppointmentListHeaders = () => {
               <div className="absolute inset-0 bg-black opacity-50"></div>
               <div className="bg-color-4 p-6 rounded-lg shadow-lg z-10 px-20 py-14">
                 <div className="flex justify-between items-center mb-10 gap-32">
+                  <div className="flex-1">
+                    <div className="flex gap-1">
+                      <h1
+                        className={`font-poppins font-semibold text-2xl ${
+                          currentStep === 1 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        1
+                      </h1>
+                      <p
+                        className={`mt-3 font-poppins font-semibold text-[13px] ${
+                          currentStep === 1 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        Assignments
+                      </p>
+                    </div>
+                    <div
+                      className={`h-1 w-52 ${
+                        currentStep === 1 ? "bg-color-1" : "bg-gray-200"
+                      }`}
+                    ></div>
+                  </div>
                   <button
                     onClick={handleCloseModal}
-                    type="submit"
+                    type="button"
                     className="px-5 py-3 ml-auto bg-[#F64E60] text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
                   >
                     CLOSE
@@ -134,90 +226,93 @@ const AppointmentListHeaders = () => {
                 </div>
 
                 <div>
-                  <div className="mb-10">
-                    <div className="flex gap-1">
-                      <h1 className="font-poppins font-semibold text-2xl text-color-1">
-                        1
-                      </h1>
-                      <p className="mt-3 font-poppins font-semibold text-[13px] text-color-1">
+                  {currentStep === 1 && (
+                    <div>
+                      <h2 className="font-poppins text-xl font-medium mb-4">
                         Assignments
-                      </p>
-                    </div>
-                    <div className="h-1 w-52 bg-color-1"></div>
-                  </div>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
-                      <div className="flex gap-5">
-                        <div>
-                          <label className="block font-poppins text-sm font-regular text-gray-700">
-                            Patient
-                          </label>
-                          <select
-                            name="patient_id"
-                            value={formData.patient_id}
-                            onChange={handleChange}
-                            className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                            required
-                          >
-                            <option value="">Select patient</option>
-                            {availablePatients.map((patient) => (
-                              <option key={patient.id} value={patient.id}>
-                                {patient.name}
-                              </option>
-                            ))}
-                          </select>
-                          {validationErrors.patient_id && (
-                            <p className="text-red-500 text-sm">
-                              {validationErrors.patient_id}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex gap-5">
-                        <div>
-                          <label className="block font-poppins text-sm font-regular text-gray-700">
-                            Doctor
-                          </label>
-                          <select
-                            name="doctor_id"
-                            value={formData.doctor_id}
-                            onChange={handleChange}
-                            className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                            required
-                          >
-                            <option value="">Select doctor</option>
-                            {doctors.map((doctor) => (
-                              <option key={doctor.id} value={doctor.id}>
-                                {doctor.name}
-                              </option>
-                            ))}
-                          </select>
-                          {validationErrors.doctor_id && (
-                            <p className="text-red-500 text-sm">
-                              {validationErrors.doctor_id}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                      </h2>
+                      <form className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block font-poppins text-sm font-regular text-gray-700">
+                              Patient
+                            </label>
+                            <select
+                              name="patient_id"
+                              value={formData.patient_id}
+                              onChange={handleChange}
+                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                              required
+                            >
+                              <option value="">Select patient</option>
+                              {availablePatients.map((patient) => (
+                                <option key={patient.id} value={patient.id}>
+                                  {patient.name}
+                                </option>
+                              ))}
+                            </select>
+                            {validationErrors.patient_id && (
+                              <p className="text-red-500 text-sm">
+                                {validationErrors.patient_id}
+                              </p>
+                            )}
+                          </div>
 
-                    {submitError.length > 0 && (
-                      <div className="text-red-500 mt-7">
-                        {submitError.map((err, index) => (
-                          <p key={index}>{err.msg}</p>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex justify-end mt-6">
-                      <button
-                        type="submit"
-                        className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                      >
-                        Submit
-                      </button>
+                          <div>
+                            <label className="block font-poppins text-sm font-regular text-gray-700">
+                              Doctor
+                            </label>
+                            <select
+                              name="doctor_id"
+                              value={formData.doctor_id}
+                              onChange={handleChange}
+                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                              required
+                            >
+                              <option value="">Select doctor</option>
+                              {doctors.map((doctor) => (
+                                <option key={doctor.id} value={doctor.id}>
+                                  {doctor.name}
+                                </option>
+                              ))}
+                            </select>
+                            {validationErrors.doctor_id && (
+                              <p className="text-red-500 text-sm">
+                                {validationErrors.doctor_id}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </form>
                     </div>
-                  </form>
+                  )}
+                </div>
+
+                <div className="flex justify-between mt-6">
+                  {currentStep > 1 && (
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-5 py-3 mr-auto bg-color-5 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      Previous Step
+                    </button>
+                  )}
+                  {currentStep < 1 && (
+                    <button
+                      onClick={handleNextStep}
+                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      NEXT STEP
+                    </button>
+                  )}
+                  {currentStep === 1 && (
+                    <button
+                      onClick={handleSubmit}
+                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      Submit
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

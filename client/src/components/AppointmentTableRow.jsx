@@ -2,34 +2,73 @@ import React, { useState } from "react";
 import person from "../assets/img/person.svg";
 import row from "../assets/img/row.svg";
 
-const AppointmentTableRow = ({ appointment, patients, doctors }) => {
+const AppointmentTableRow = ({ appointment, patients, doctors, onDelete, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    gender: appointment.gender,
-    specialty: appointment.doctor_specialty,
-    phone: appointment.phone,
-    email: appointment.email,
+    doctor_id: appointment.doctor_id,
+    patient_id: appointment.patient_id,
   });
-  const [validationErrors, setValidationErrors] = useState({});
   const [submitError, setSubmitError] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Lógica de validación y envío de formulario
-  };
-  const handleDelete = () => {
-    // Lógica de eliminación
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSubmitError([]);
+    setValidationErrors({});
   };
 
-  const formatDate = (date) => {
-    // Lógica de formateo de fecha
-    return date;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.doctor_id) errors.doctor_id = "Doctor ID is required";
+    if (!formData.patient_id) errors.patient_id = "Patient ID is required";
+    return errors;
+  };
+
+  const updateAppointment = async (id, data) => {
+    try {
+      const response = await fetch(`http://localhost:5000/populations/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update appointment");
+      }
+      return result.data;
+    } catch (error) {
+      setSubmitError([{ msg: error.message }]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    const dataToSubmit = {
+      doctor_id: formData.doctor_id,
+      patient_id: formData.patient_id,
+    };
+
+    try {
+      const updatedAppointment = await updateAppointment(appointment.id, dataToSubmit);
+      onUpdate(appointment.id, updatedAppointment);
+      handleCloseModal();
+    } catch (error) {
+      console.error(`Error in handleSubmit: ${error.message}`);
+    }
   };
 
   return (
@@ -67,7 +106,7 @@ const AppointmentTableRow = ({ appointment, patients, doctors }) => {
         </td>
         <td className="flex py-4 pr-4">
           <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" onClick={handleOpenModal} />
-          <p className="mt-1 ml-2 cursor-pointer" onClick={handleDelete}>🗑️</p>
+          <p className="mt-1 ml-2 cursor-pointer" onClick={() => onDelete(appointment.id)}>🗑️</p>
         </td>
       </tr>
 
@@ -78,7 +117,7 @@ const AppointmentTableRow = ({ appointment, patients, doctors }) => {
             <div className="flex justify-between items-center mb-10 gap-32">
               <button
                 onClick={handleCloseModal}
-                type="submit"
+                type="button"
                 className="px-5 py-3 ml-auto bg-[#F64E60] text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
               >
                 CLOSE
@@ -86,90 +125,73 @@ const AppointmentTableRow = ({ appointment, patients, doctors }) => {
             </div>
 
             <div>
-              <h2 className="font-poppins text-xl font-medium mb-4">
-                Basic Information
-              </h2>
+              <div className="mb-10">
+                <div className="flex gap-1">
+                  <h1 className="font-poppins font-semibold text-2xl text-color-1">
+                    1
+                  </h1>
+                  <p className="mt-3 font-poppins font-semibold text-[13px] text-color-1">
+                    Assignments
+                  </p>
+                </div>
+                <div className="h-1 w-52 bg-color-1"></div>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
+                  <div className="flex gap-5">
                     <div>
                       <label className="block font-poppins text-sm font-regular text-gray-700">
-                        Gender
+                        Patient
                       </label>
                       <select
-                        name="gender"
-                        value={formData.gender}
+                        name="patient_id"
+                        value={formData.patient_id}
                         onChange={handleChange}
-                        className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                        className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
                         required
                       >
-                        <option value="male">male</option>
-                        <option value="female">female</option>
-                        <option value="other">other</option>
+                        <option value="">Select patient</option>
+                        {patients.map((patient) => (
+                          <option key={patient.id} value={patient.id}>
+                            {patient.name}
+                          </option>
+                        ))}
                       </select>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-5">
-                    <div>
-                      <label className="block font-poppins text-sm font-regular text-gray-700">
-                        Specialty
-                      </label>
-                      <select
-                        name="specialty"
-                        value={formData.specialty}
-                        onChange={handleChange}
-                        className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                        required
-                      >
-                        <option value="Cardiology">Cardiology</option>
-                        <option value="Neurology">Neurology</option>
-                        <option value="Pediatrics">Pediatrics</option>
-                        <option value="Oncology">Oncology</option>
-                        <option value="Dermatology">Dermatology</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-5">
-                    <div>
-                      <label className="block font-poppins text-sm font-regular text-gray-700">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Enter phone number"
-                        required
-                      />
-                      {validationErrors.phone && (
-                        <p className="text-red-500 text-sm">{validationErrors.phone}</p>
+                      {validationErrors.patient_id && (
+                        <p className="text-red-500 text-sm">
+                          {validationErrors.patient_id}
+                        </p>
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-5">
+                  <div className="flex gap-5">
                     <div>
                       <label className="block font-poppins text-sm font-regular text-gray-700">
-                        Email
+                        Doctor
                       </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
+                      <select
+                        name="doctor_id"
+                        value={formData.doctor_id}
                         onChange={handleChange}
-                        className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Enter email address"
+                        className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
                         required
-                      />
-                      {validationErrors.email && (
-                        <p className="text-red-500 text-sm">{validationErrors.email}</p>
+                      >
+                        <option value="">Select doctor</option>
+                        {doctors.map((doctor) => (
+                          <option key={doctor.id} value={doctor.id}>
+                            {doctor.name}
+                          </option>
+                        ))}
+                      </select>
+                      {validationErrors.doctor_id && (
+                        <p className="text-red-500 text-sm">
+                          {validationErrors.doctor_id}
+                        </p>
                       )}
                     </div>
                   </div>
                 </div>
+
                 {submitError.length > 0 && (
                   <div className="text-red-500 mt-7">
                     {submitError.map((err, index) => (
@@ -177,16 +199,16 @@ const AppointmentTableRow = ({ appointment, patients, doctors }) => {
                     ))}
                   </div>
                 )}
-              </form>
-            </div>
 
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={handleSubmit}
-                className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-              >
-                Submit
-              </button>
+                <div className="flex justify-end mt-6">
+                  <button
+                    type="submit"
+                    className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

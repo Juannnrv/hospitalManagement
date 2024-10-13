@@ -1,7 +1,7 @@
 import React from "react";
 import AppointmentTableRow from "./AppointmentTableRow";
 
-const AppointmentTable = ({ appointments, patients, doctors }) => {
+const AppointmentTable = ({ appointments, patients, doctors, onDelete, onUpdate }) => {
   return (
     <table className="w-full ">
       <thead>
@@ -14,12 +14,14 @@ const AppointmentTable = ({ appointments, patients, doctors }) => {
         </tr>
       </thead>
       <tbody>
-        {appointments.map((appointment, index) => (
+        {appointments.map((appointment) => (
           <AppointmentTableRow
-            key={appointment.id || index}
+            key={appointment.id}
             appointment={appointment}
             patients={patients}
             doctors={doctors}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
           />
         ))}
       </tbody>
