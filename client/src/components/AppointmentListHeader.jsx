@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useFetch from "../hooks/useFetch";
 import AppointmentTable from "./AppointmentTable";
 import doctor from "../assets/img/doctor.svg";
@@ -19,40 +19,31 @@ const postData = async (url, data) => {
   return response.json();
 };
 
-const specialtiesMap = {
-  Cardiology: 1,
-  Neurology: 2,
-  Pediatrics: 3,
-  Oncology: 4,
-  Dermatology: 5,
-};
-
 const AppointmentListHeaders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const { data: populations, loading, error } = useFetch("/populations/current");
+  const [populations, setPopulations] = useState([]);
+  const { data: initialPopulations, loading, error } = useFetch("/populations/current");
+  const { data: availablePatients } = useFetch("/populations");
+  const { data: doctors } = useFetch("/doctors");
   const [formData, setFormData] = useState({
-    fullName: "",
-    gender: "male",
-    dateOfJoining: "",
-    license: "",
-    specialty: "Cardiology",
-    phone: "",
-    email: "",
+    patient_id: "",
+    doctor_id: "",
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
 
+  useEffect(() => {
+    if (initialPopulations) {
+      setPopulations(initialPopulations);
+    }
+  }, [initialPopulations]);
+
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setCurrentStep(1);
     setSubmitError([]);
     setValidationErrors({});
   };
-
-  const handleNextStep = () => setCurrentStep((prevStep) => prevStep + 1);
-  const handlePreviousStep = () => setCurrentStep((prevStep) => prevStep - 1);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,12 +52,8 @@ const AppointmentListHeaders = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.fullName) errors.fullName = "Full Name is required";
-    if (!formData.dateOfJoining)
-      errors.dateOfJoining = "Date of Joining is required";
-    if (!formData.license) errors.license = "License is required";
-    if (!formData.phone) errors.phone = "Phone number is required";
-    if (!formData.email) errors.email = "Email is required";
+    if (!formData.patient_id) errors.patient_id = "Patient ID is required";
+    if (!formData.doctor_id) errors.doctor_id = "Doctor ID is required";
     return errors;
   };
 
@@ -79,21 +66,17 @@ const AppointmentListHeaders = () => {
     }
 
     const dataToSubmit = {
-      name: `Dr. ${formData.fullName}`,
-      gender: formData.gender,
-      date_of_birth: formData.dateOfJoining,
-      license: `LIC${formData.license}`,
-      specialty_id: specialtiesMap[formData.specialty],
-      phone: formData.phone,
-      email: formData.email,
-      status: "Approved",
+      patient_id: formData.patient_id,
+      doctor_id: formData.doctor_id,
     };
 
     try {
-      const result = await postData("http://localhost:5000/populations");
+      const result = await postData("http://localhost:5000/populations", dataToSubmit);
       console.log("Form data submitted:", result);
+
+      setPopulations((prevPopulations) => [...prevPopulations, result]);
+
       handleCloseModal();
-      window.location.reload();
     } catch (error) {
       console.error("Error submitting form data:", error.message);
       try {
@@ -130,59 +113,17 @@ const AppointmentListHeaders = () => {
             </button>
           </header>
 
-          <AppointmentTable appointments={populations}/>
+          <AppointmentTable
+            appointments={populations}
+            patients={availablePatients}
+            doctors={doctors}
+          />
 
           {isModalOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50">
               <div className="absolute inset-0 bg-black opacity-50"></div>
               <div className="bg-color-4 p-6 rounded-lg shadow-lg z-10 px-20 py-14">
                 <div className="flex justify-between items-center mb-10 gap-32">
-                  <div className="flex-1">
-                    <div className="flex gap-1">
-                      <h1
-                        className={`font-poppins font-semibold text-2xl ${
-                          currentStep === 1 ? "text-color-1" : "text-color-6"
-                        }`}
-                      >
-                        1
-                      </h1>
-                      <p
-                        className={`mt-3 font-poppins font-semibold text-[13px] ${
-                          currentStep === 1 ? "text-color-1" : "text-color-6"
-                        }`}
-                      >
-                        Basic information
-                      </p>
-                    </div>
-                    <div
-                      className={`h-1 w-52 ${
-                        currentStep === 1 ? "bg-color-1" : "bg-gray-200"
-                      }`}
-                    ></div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex gap-1">
-                      <h1
-                        className={`font-poppins font-semibold text-2xl ${
-                          currentStep === 2 ? "text-color-1" : "text-color-6"
-                        }`}
-                      >
-                        2
-                      </h1>
-                      <p
-                        className={`mt-3 font-poppins font-semibold text-[13px] ${
-                          currentStep === 2 ? "text-color-1" : "text-color-6"
-                        }`}
-                      >
-                        Enter Contact
-                      </p>
-                    </div>
-                    <div
-                      className={`h-1 w-52 ${
-                        currentStep === 2 ? "bg-color-1" : "bg-gray-200"
-                      }`}
-                    ></div>
-                  </div>
                   <button
                     onClick={handleCloseModal}
                     type="submit"
@@ -193,204 +134,90 @@ const AppointmentListHeaders = () => {
                 </div>
 
                 <div>
-                  {currentStep === 1 && (
-                    <div>
-                      <h2 className="font-poppins text-xl font-medium mb-4">
-                        Basic Information
-                      </h2>
-                      <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="flex flex-col gap-5">
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Full Name
-                              </label>
-                              <input
-                                type="text"
-                                name="fullName"
-                                value={formData.fullName}
-                                onChange={handleChange}
-                                className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                                placeholder="Enter full name"
-                                required
-                              />
-                              {validationErrors.fullName && (
-                                <p className="text-red-500 text-sm">
-                                  {validationErrors.fullName}
-                                </p>
-                              )}
-                            </div>
-
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Gender
-                              </label>
-                              <select
-                                name="gender"
-                                value={formData.gender}
-                                onChange={handleChange}
-                                className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                                required
-                              >
-                                <option value="male">male</option>
-                                <option value="female">female</option>
-                                <option value="other">other</option>
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Date of Joining
-                              </label>
-                              <input
-                                type="date"
-                                name="dateOfJoining"
-                                value={formData.dateOfJoining}
-                                onChange={handleChange}
-                                className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                                required
-                              />
-                              {validationErrors.dateOfJoining && (
-                                <p className="text-red-500 text-sm">
-                                  {validationErrors.dateOfJoining}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col gap-5">
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                License
-                              </label>
-                              <input
-                                type="text"
-                                name="license"
-                                value={formData.license}
-                                onChange={handleChange}
-                                className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                                placeholder="Enter license number"
-                                required
-                              />
-                              {validationErrors.license && (
-                                <p className="text-red-500 text-sm">
-                                  {validationErrors.license}
-                                </p>
-                              )}
-                            </div>
-
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Specialty
-                              </label>
-                              <select
-                                name="specialty"
-                                value={formData.specialty}
-                                onChange={handleChange}
-                                className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                                required
-                              >
-                                <option value="Cardiology">Cardiology</option>
-                                <option value="Neurology">Neurology</option>
-                                <option value="Pediatrics">Pediatrics</option>
-                                <option value="Oncology">Oncology</option>
-                                <option value="Dermatology">Dermatology</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      </form>
+                  <div className="mb-10">
+                    <div className="flex gap-1">
+                      <h1 className="font-poppins font-semibold text-2xl text-color-1">
+                        1
+                      </h1>
+                      <p className="mt-3 font-poppins font-semibold text-[13px] text-color-1">
+                        Assignments
+                      </p>
                     </div>
-                  )}
-                  {currentStep === 2 && (
-                    <div>
-                      <h2 className="font-poppins text-xl font-medium mb-4">
-                        Enter Contact
-                      </h2>
-                      <form onSubmit={handleSubmit} className="space-y-6 mb-20">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="flex flex-col gap-5">
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Phone
-                              </label>
-                              <input
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Enter phone number"
-                                required
-                              />
-                              {validationErrors.phone && (
-                                <p className="text-red-500 text-sm">
-                                  {validationErrors.phone}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col gap-5">
-                            <div>
-                              <label className="block font-poppins text-sm font-regular text-gray-700">
-                                Email
-                              </label>
-                              <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Enter email address"
-                                required
-                              />
-                              {validationErrors.email && (
-                                <p className="text-red-500 text-sm">
-                                  {validationErrors.email}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {submitError.length > 0 && (
-                          <div className="text-red-500 mt-7">
-                            {submitError.map((err, index) => (
-                              <p key={index}>{err.msg}</p>
+                    <div className="h-1 w-52 bg-color-1"></div>
+                  </div>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
+                      <div className="flex gap-5">
+                        <div>
+                          <label className="block font-poppins text-sm font-regular text-gray-700">
+                            Patient
+                          </label>
+                          <select
+                            name="patient_id"
+                            value={formData.patient_id}
+                            onChange={handleChange}
+                            className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                            required
+                          >
+                            <option value="">Select patient</option>
+                            {availablePatients.map((patient) => (
+                              <option key={patient.id} value={patient.id}>
+                                {patient.name}
+                              </option>
                             ))}
-                          </div>
-                        )}
-                      </form>
+                          </select>
+                          {validationErrors.patient_id && (
+                            <p className="text-red-500 text-sm">
+                              {validationErrors.patient_id}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-5">
+                        <div>
+                          <label className="block font-poppins text-sm font-regular text-gray-700">
+                            Doctor
+                          </label>
+                          <select
+                            name="doctor_id"
+                            value={formData.doctor_id}
+                            onChange={handleChange}
+                            className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                            required
+                          >
+                            <option value="">Select doctor</option>
+                            {doctors.map((doctor) => (
+                              <option key={doctor.id} value={doctor.id}>
+                                {doctor.name}
+                              </option>
+                            ))}
+                          </select>
+                          {validationErrors.doctor_id && (
+                            <p className="text-red-500 text-sm">
+                              {validationErrors.doctor_id}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex justify-between mt-6">
-                  {currentStep > 1 && (
-                    <button
-                      onClick={handlePreviousStep}
-                      className="px-5 py-3 mr-auto bg-color-5 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                    >
-                      Previous Step
-                    </button>
-                  )}
-                  {currentStep < 2 && (
-                    <button
-                      onClick={handleNextStep}
-                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                    >
-                      NEXT STEP
-                    </button>
-                  )}
-                  {currentStep === 2 && (
-                    <button
-                      onClick={handleSubmit}
-                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                    >
-                      Submit
-                    </button>
-                  )}
+                    {submitError.length > 0 && (
+                      <div className="text-red-500 mt-7">
+                        {submitError.map((err, index) => (
+                          <p key={index}>{err.msg}</p>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end mt-6">
+                      <button
+                        type="submit"
+                        className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>

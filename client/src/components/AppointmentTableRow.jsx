@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import person from "../assets/img/person.svg";
 import row from "../assets/img/row.svg";
 
-const AppointmentTableRow = ({ appointment }) => {
+const AppointmentTableRow = ({ appointment, patients, doctors }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     gender: appointment.gender,
@@ -50,7 +50,8 @@ const AppointmentTableRow = ({ appointment }) => {
         </td>
         <td className="font-poppins font-semibold text-sm text-color-5">
           {appointment.id}
-        </td><td className="font-poppins font-semibold text-sm text-color-5">
+        </td>
+        <td className="font-poppins font-semibold text-sm text-color-5">
           {appointment.patient}
         </td>
         <td className="py-4 pr-4">
