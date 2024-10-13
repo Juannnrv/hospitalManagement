@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import person from "../assets/img/person.svg";
 import row from "../assets/img/row.svg";
 
 const HospitalTableRow = ({ hospital, onDelete }) => {
@@ -70,8 +69,12 @@ const HospitalTableRow = ({ hospital, onDelete }) => {
   };
 
   const handleDelete = async () => {
-    await deleteHospital(hospital.id);
-    onDelete(hospital.id);
+    try {
+      await deleteHospital(hospital.id);
+      onDelete(hospital.id);
+    } catch (error) {
+      setSubmitError([{ msg: error.message }]);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -103,7 +106,9 @@ const HospitalTableRow = ({ hospital, onDelete }) => {
           {hospital.name}
         </td>
         <td className="font-poppins font-semibold text-sm text-color-5">
-          {hospital.address.slice(0, 30)}...
+          {hospital.address.length > 30
+            ? `${hospital.address.slice(0, 30)}...`
+            : hospital.address}
         </td>
         <td className="font-poppins font-semibold text-sm text-color-5">
           {hospital.phone}
@@ -112,8 +117,15 @@ const HospitalTableRow = ({ hospital, onDelete }) => {
           {hospital.email}
         </td>
         <td className="flex py-4 pr-4">
-          <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" onClick={handleOpenModal} />
-          <p className="mt-1 ml-2 cursor-pointer" onClick={handleDelete}>🗑️</p>
+          <img
+            src={row}
+            className="w-15 h-15 cursor-pointer"
+            alt="row icon"
+            onClick={handleOpenModal}
+          />
+          <p className="mt-1 ml-2 cursor-pointer" onClick={handleDelete}>
+            🗑️
+          </p>
         </td>
       </tr>
 

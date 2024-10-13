@@ -3,6 +3,22 @@ import useFetch from "../hooks/useFetch";
 import HospitalTable from "./HospitalTable";
 import doctor from "../assets/img/doctor.svg";
 
+const postData = async (url, data) => {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  return response.json();
+};
+
 const HospitalListHeaders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hospitals, setHospitals] = useState([]);
@@ -15,6 +31,7 @@ const HospitalListHeaders = () => {
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
+  const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
     if (initialHospitals) {
@@ -27,6 +44,7 @@ const HospitalListHeaders = () => {
     setIsModalOpen(false);
     setSubmitError([]);
     setValidationErrors({});
+    setCurrentStep(1);
   };
 
   const handleChange = (e) => {
@@ -34,17 +52,20 @@ const HospitalListHeaders = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const validateForm = () => {
+  const validateForm = (step) => {
     const errors = {};
-    if (!formData.name) errors.name = "Name is required";
-    if (!formData.address) errors.address = "Address is required";
-    if (!formData.phone) errors.phone = "Phone is required";
-    if (!formData.email) errors.email = "Email is required";
+    if (step === 1) {
+      if (!formData.name) errors.name = "Name is required";
+      if (!formData.address) errors.address = "Address is required";
+    } else if (step === 2) {
+      if (!formData.phone) errors.phone = "Phone is required";
+      if (!formData.email) errors.email = "Email is required";
+    }
     return errors;
   };
 
   const handleNextStep = () => {
-    const errors = validateForm();
+    const errors = validateForm(currentStep);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
@@ -59,7 +80,7 @@ const HospitalListHeaders = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validateForm();
+    const errors = validateForm(currentStep);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
@@ -73,10 +94,22 @@ const HospitalListHeaders = () => {
     };
 
     try {
-      const result = await postData("http://localhost:5000/hospitals", dataToSubmit);
+      const result = await postData(
+        "http://localhost:5000/hospitals",
+        dataToSubmit
+      );
       console.log("Form data submitted:", result);
 
-      setHospitals((prevHospitals) => [...prevHospitals, result]);
+      // Asegúrate de que el nuevo hospital tenga la misma estructura que los existentes
+      const newHospital = {
+        id: result.data.id,
+        name: result.data.name,
+        address: result.data.address,
+        phone: result.data.phone,
+        email: result.data.email,
+      };
+
+      setHospitals((prevHospitals) => [...prevHospitals, newHospital]);
 
       handleCloseModal();
     } catch (error) {
@@ -92,8 +125,20 @@ const HospitalListHeaders = () => {
     }
   };
 
-  const handleDeleteHospital = (id) => {
-    setHospitals(hospitals.filter(hospital => hospital.id !== id));
+  const handleDeleteHospital = async (id) => {
+    try {
+      await fetch(`http://localhost:5000/hospitals/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setHospitals((prevHospitals) =>
+        prevHospitals.filter((hospital) => hospital.id !== id)
+      );
+    } catch (error) {
+      console.error("Error deleting hospital:", error.message);
+    }
   };
 
   if (loading) return <p>Loading...</p>;
@@ -119,13 +164,62 @@ const HospitalListHeaders = () => {
             </button>
           </header>
 
-          <HospitalTable hospitals={hospitals} onDelete={handleDeleteHospital} />
+          <HospitalTable
+            hospitals={hospitals}
+            onDelete={handleDeleteHospital}
+          />
 
           {isModalOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50">
               <div className="absolute inset-0 bg-black opacity-50"></div>
               <div className="bg-color-4 p-6 rounded-lg shadow-lg z-10 px-20 py-14">
                 <div className="flex justify-between items-center mb-10 gap-32">
+                  <div className="flex-1">
+                    <div className="flex gap-1">
+                      <h1
+                        className={`font-poppins font-semibold text-2xl ${
+                          currentStep === 1 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        1
+                      </h1>
+                      <p
+                        className={`mt-3 font-poppins font-semibold text-[13px] ${
+                          currentStep === 1 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        Basic information
+                      </p>
+                    </div>
+                    <div
+                      className={`h-1 w-52 ${
+                        currentStep === 1 ? "bg-color-1" : "bg-gray-200"
+                      }`}
+                    ></div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex gap-1">
+                      <h1
+                        className={`font-poppins font-semibold text-2xl ${
+                          currentStep === 2 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        2
+                      </h1>
+                      <p
+                        className={`mt-3 font-poppins font-semibold text-[13px] ${
+                          currentStep === 2 ? "text-color-1" : "text-color-6"
+                        }`}
+                      >
+                        Enter Contact
+                      </p>
+                    </div>
+                    <div
+                      className={`h-1 w-52 ${
+                        currentStep === 2 ? "bg-color-1" : "bg-gray-200"
+                      }`}
+                    ></div>
+                  </div>
                   <button
                     onClick={handleCloseModal}
                     type="button"
@@ -136,21 +230,13 @@ const HospitalListHeaders = () => {
                 </div>
 
                 <div>
-                  <div className="mb-10">
-                    <div className="flex gap-1">
-                      <h1 className="font-poppins font-semibold text-2xl text-color-1">
-                        {currentStep}
-                      </h1>
-                      <p className="mt-3 font-poppins font-semibold text-[13px] text-color-1">
-                        {currentStep === 1 ? "Hospital Details" : "Contact Information"}
-                      </p>
-                    </div>
-                    <div className="h-1 w-52 bg-color-1"></div>
-                  </div>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {currentStep === 1 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
-                        <div className="flex gap-5">
+                  {currentStep === 1 && (
+                    <div>
+                      <h2 className="font-poppins text-xl font-medium mb-4">
+                        Basic Information
+                      </h2>
+                      <form className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
                             <label className="block font-poppins text-sm font-regular text-gray-700">
                               Name
@@ -160,7 +246,7 @@ const HospitalListHeaders = () => {
                               name="name"
                               value={formData.name}
                               onChange={handleChange}
-                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                              className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
                               required
                             />
                             {validationErrors.name && (
@@ -169,8 +255,7 @@ const HospitalListHeaders = () => {
                               </p>
                             )}
                           </div>
-                        </div>
-                        <div className="flex gap-5">
+
                           <div>
                             <label className="block font-poppins text-sm font-regular text-gray-700">
                               Address
@@ -180,7 +265,7 @@ const HospitalListHeaders = () => {
                               name="address"
                               value={formData.address}
                               onChange={handleChange}
-                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                              className="mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
                               required
                             />
                             {validationErrors.address && (
@@ -190,90 +275,96 @@ const HospitalListHeaders = () => {
                             )}
                           </div>
                         </div>
-                      </div>
-                    )}
-
-                    {currentStep === 2 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-10">
-                        <div className="flex gap-5">
-                          <div>
-                            <label className="block font-poppins text-sm font-regular text-gray-700">
-                              Phone
-                            </label>
-                            <input
-                              type="text"
-                              name="phone"
-                              value={formData.phone}
-                              onChange={handleChange}
-                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                              required
-                            />
-                            {validationErrors.phone && (
-                              <p className="text-red-500 text-sm">
-                                {validationErrors.phone}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-5">
-                          <div>
-                            <label className="block font-poppins text-sm font-regular text-gray-700">
-                              Email
-                            </label>
-                            <input
-                              type="email"
-                              name="email"
-                              value={formData.email}
-                              onChange={handleChange}
-                              className="pr-60 mt-1 p-1.5 block w-full border border-gray-300 rounded-md shadow-sm sm:text-sm"
-                              required
-                            />
-                            {validationErrors.email && (
-                              <p className="text-red-500 text-sm">
-                                {validationErrors.email}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {submitError.length > 0 && (
-                      <div className="text-red-500 mt-7">
-                        {submitError.map((err, index) => (
-                          <p key={index}>{err.msg}</p>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex justify-between mt-6">
-                      {currentStep > 1 && (
-                        <button
-                          type="button"
-                          onClick={handlePreviousStep}
-                          className="px-5 py-3 bg-gray-300 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                        >
-                          Previous
-                        </button>
-                      )}
-                      {currentStep < 2 ? (
-                        <button
-                          type="button"
-                          onClick={handleNextStep}
-                          className="px-5 py-3 bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                        >
-                          Next
-                        </button>
-                      ) : (
-                        <button
-                          type="submit"
-                          className="px-5 py-3 bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
-                        >
-                          Submit
-                        </button>
-                      )}
+                      </form>
                     </div>
-                  </form>
+                  )}
+                  {currentStep === 2 && (
+                    <div>
+                      <h2 className="font-poppins text-xl font-medium mb-4">
+                        Enter Contact
+                      </h2>
+                      <form className="space-y-6 mb-20">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="flex flex-col gap-5">
+                            <div>
+                              <label className="block font-poppins text-sm font-regular text-gray-700">
+                                Phone
+                              </label>
+                              <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required
+                              />
+                              {validationErrors.phone && (
+                                <p className="text-red-500 text-sm">
+                                  {validationErrors.phone}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-5">
+                            <div>
+                              <label className="block font-poppins text-sm font-regular text-gray-700">
+                                Email
+                              </label>
+                              <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required
+                              />
+                              {validationErrors.email && (
+                                <p className="text-red-500 text-sm">
+                                  {validationErrors.email}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {submitError.length > 0 && (
+                          <div className="text-red-500 mt-7">
+                            {submitError.map((err, index) => (
+                              <p key={index}>{err.msg}</p>
+                            ))}
+                          </div>
+                        )}
+                      </form>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between mt-6">
+                  {currentStep > 1 && (
+                    <button
+                      onClick={handlePreviousStep}
+                      className="px-5 py-3 mr-auto bg-color-5 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      Previous Step
+                    </button>
+                  )}
+                  {currentStep < 2 && (
+                    <button
+                      onClick={handleNextStep}
+                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      NEXT STEP
+                    </button>
+                  )}
+                  {currentStep === 2 && (
+                    <button
+                      onClick={handleSubmit}
+                      className="px-5 py-3 ml-auto bg-color-2 text-color-4 font-semibold font-poppins rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-color-3"
+                    >
+                      Submit
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React from "react";
 import HospitalTableRow from "./HospitalTableRow";
 
 const HospitalTable = ({ hospitals, onDelete }) => {
+    console.log('Hospitales table ', hospitals)
   if (!hospitals) return <p>Loading...</p>;
 
   return (
@@ -17,9 +18,9 @@ const HospitalTable = ({ hospitals, onDelete }) => {
         </tr>
       </thead>
       <tbody>
-        {hospitals.map((hospital, index) => (
+        {hospitals.map((hospital) => (
           <HospitalTableRow
-            key={hospital.id || index}
+            key={hospital.id}
             hospital={hospital}
             onDelete={onDelete}
           />
