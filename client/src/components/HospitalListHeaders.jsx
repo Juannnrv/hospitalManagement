@@ -100,7 +100,6 @@ const HospitalListHeaders = () => {
       );
       console.log("Form data submitted:", result);
 
-      // Asegúrate de que el nuevo hospital tenga la misma estructura que los existentes
       const newHospital = {
         id: result.data.id,
         name: result.data.name,
@@ -141,6 +140,14 @@ const HospitalListHeaders = () => {
     }
   };
 
+  const handleUpdateHospital = (id, updatedData) => {
+    setHospitals((prevHospitals) =>
+      prevHospitals.map((hospital) =>
+        hospital.id === id ? { ...hospital, ...updatedData } : hospital
+      )
+    );
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
@@ -167,6 +174,7 @@ const HospitalListHeaders = () => {
           <HospitalTable
             hospitals={hospitals}
             onDelete={handleDeleteHospital}
+            onUpdate={handleUpdateHospital}
           />
 
           {isModalOpen && (
