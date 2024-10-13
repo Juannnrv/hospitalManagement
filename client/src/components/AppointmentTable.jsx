@@ -6,10 +6,10 @@ const AppointmentTable = ({ appointments, patients, doctors, onDelete, onUpdate 
     <table className="w-full ">
       <thead>
         <tr className="text-left bg-color-7 px-5 py-3 text-black opacity-45 text-[12px] font-poppins font-semibold">
-          <th className="pb-4 ">Doctor</th>
-          <th className="pb-4">ID</th>
-          <th className="pb-4">Patient</th>
-          <th className="pb-4">Status</th>
+          <th className="pb-4">Doctor</th>
+          <th className="pb-4 pr-20">ID</th>
+          <th className="pb-4 pr-20">Patient</th>
+          <th className="pb-4 pr-20">Status</th>
           <th className="pb-4"></th>
         </tr>
       </thead>

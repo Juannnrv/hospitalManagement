@@ -6,9 +6,9 @@ const DoctorTable = ({ doctors, onDelete, onUpdate }) => {
     <table className="w-full">
       <thead>
         <tr className="text-left bg-color-7 px-5 py-3 text-black opacity-45 text-[12px] font-poppins font-semibold">
-          <th className="pb-4">Name</th>
-          <th className="pb-4">ID</th>
-          <th className="pb-4">Gender</th>
+          <th className="pb-4 pr-40">Name</th>
+          <th className="pb-4 pr-10">ID</th>
+          <th className="pb-4 pr-10">Gender</th>
           <th className="pb-4">Email</th>
           <th className="pb-4">Phone number</th>
           <th className="pb-4">Date added</th>
