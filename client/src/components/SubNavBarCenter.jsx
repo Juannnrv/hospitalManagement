@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import AppointmentListHeaders from "../components/AppointmentListHeader"; 
-import DoctorListHeader from "../components/DoctorListHeaders";
+import HospitalListHeaders from "./HospitalListHeaders";
 
-const SubNavbar = () => {
-  const [activeSubNav, setActiveSubNav] = useState(0);
-  const subNavItems = ["Doctor", "Appointments"];
+const SubNavBarCenter = () => {
+    const [activeSubNav, setActiveSubNav] = useState(0);
+  const subNavItems = ["Hospital", "Staff", "News"];
 
   const handleClick = (index) => {
     setActiveSubNav(index);
@@ -31,11 +30,10 @@ const SubNavbar = () => {
         })}
       </div>
       <div className="content">
-        {activeSubNav === 0 && <DoctorListHeader />} {/* Solo se muestra cuando activeSubNav es 0 */}
-        {activeSubNav === 1 && <AppointmentListHeaders />} {/* Solo se muestra cuando activeSubNav es 1 */}
+        {activeSubNav === 0 && <HospitalListHeaders />}{" "}
       </div>
     </div>
   );
-};
+}
 
-export default SubNavbar;
+export default SubNavBarCenter;
