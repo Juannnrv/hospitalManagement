@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import HospitalListHeaders from "./HospitalListHeaders";
 import StaffListHeaders from "./StafflListHeaders";
-
+import NewListHeaders from "./NoticeListHeaders";
 const SubNavBarCenter = () => {
     const [activeSubNav, setActiveSubNav] = useState(0);
   const subNavItems = ["Hospital", "Staff", "News"];
@@ -33,6 +33,7 @@ const SubNavBarCenter = () => {
       <div className="content">
         {activeSubNav === 0 && <HospitalListHeaders />}{" "}
         {activeSubNav === 1 && <StaffListHeaders />}{" "}
+        {activeSubNav === 2 && < NewListHeaders />}{" "}
       </div>
     </div>
   );
