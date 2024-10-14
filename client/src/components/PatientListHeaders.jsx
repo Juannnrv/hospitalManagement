@@ -128,7 +128,7 @@ const PatientListHeader = () => {
       const file = files[0];
       setFormData((prevData) => ({
         ...prevData,
-        medical_history_file: file, // Guarda el archivo aquí
+        medical_history_file: file, 
       }));
     } else {
       setFormData((prevData) => ({ ...prevData, [name]: value }));

@@ -6,12 +6,16 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    fullName: patient.name,
-    gender: patient.gender,
-    dateOfBirth: patient.date_of_birth.split("T")[0],
-    phone: patient.phone,
-    email: patient.email,
-    status: patient.status,
+    fullName: patient.name || "",
+    gender: patient.gender || "",
+    dateOfBirth: patient.date_of_birth
+      ? patient.date_of_birth.split("T")[0]
+      : "",
+    phone: patient.phone || "",
+    email: patient.email || "",
+    status: patient.status || "",
+    age: patient.age || "", // Asegúrate de que age esté inicializado
+    medical_history_file: null, // Añadir campo para el archivo
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
@@ -28,8 +32,16 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
   const handlePreviousStep = () => setCurrentStep((prevStep) => prevStep - 1);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === "medical_history" && files.length > 0) {
+      const file = files[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        medical_history_file: file, // Guarda el archivo aquí
+      }));
+    } else {
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
+    }
   };
 
   const validateForm = () => {
@@ -39,6 +51,8 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
     if (!formData.phone) errors.phone = "Phone number is required";
     if (!formData.email) errors.email = "Email is required";
     if (!formData.status) errors.status = "Status is required";
+    if (!Number.isInteger(Number(formData.age)))
+      errors.age = "Age must be an integer"; 
     return errors;
   };
 
@@ -46,10 +60,7 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
     try {
       const response = await fetch(`http://localhost:5000/patients/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: data,
       });
       if (!response.ok) {
         throw new Error("Failed to update patient");
@@ -57,6 +68,7 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
       return await response.json();
     } catch (error) {
       setSubmitError([{ msg: error.message }]);
+      return { status: "error", message: error.message };
     }
   };
 
@@ -97,18 +109,25 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
       return;
     }
 
-    const dataToSubmit = {
-      name: formData.fullName,
-      gender: formData.gender,
-      date_of_birth: formData.dateOfBirth,
-      phone: formData.phone,
-      email: formData.email,
-      status: formData.status,
-    };
+    const dataToSubmit = new FormData();
+    dataToSubmit.append("name", formData.fullName);
+    dataToSubmit.append("gender", formData.gender);
+    dataToSubmit.append("date_of_birth", formData.dateOfBirth);
+    dataToSubmit.append("phone", formData.phone);
+    dataToSubmit.append("email", formData.email);
+    dataToSubmit.append("status", formData.status);
+    dataToSubmit.append("age", formData.age);
+    if (formData.medical_history_file) {
+      dataToSubmit.append("medical_history", formData.medical_history_file);
+    }
 
     const updatedPatient = await updatePatient(patient.id, dataToSubmit);
-    onUpdate(patient.id, updatedPatient.data);
-    handleCloseModal();
+    if (updatedPatient && updatedPatient.status === 200) {
+      onUpdate(patient.id, updatedPatient.data);
+      handleCloseModal();
+    } else {
+      setSubmitError([{ msg: updatedPatient.message || "Unknown error" }]);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -166,6 +185,21 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
           >
             {patient.status}
           </span>
+        </td>
+        <td className="font-poppins font-semibold text-sm text-color-5">
+          {patient.medical_history ? (
+            <a
+              href={URL.createObjectURL(
+                new Blob([patient.medical_history], { type: "text/plain" })
+              )}
+              download={`medical_history_${patient.name}.txt`}
+              className="text-color-8 underline"
+            >
+              Download
+            </a>
+          ) : (
+            "No file"
+          )}
         </td>
         <td className="flex py-4 pr-4">
           <img
@@ -378,6 +412,21 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
                             </p>
                           )}
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-5">
+                      <div>
+                        <label className="block font-poppins text-sm font-regular text-gray-700">
+                          Medical History
+                        </label>
+                        <input
+                          type="file"
+                          name="medical_history"
+                          accept=".txt"
+                          onChange={handleChange}
+                          className="p-1.5 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
                       </div>
                     </div>
 
