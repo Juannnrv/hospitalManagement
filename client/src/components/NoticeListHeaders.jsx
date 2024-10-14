@@ -146,12 +146,14 @@ const NoticeListHeader = () => {
 
   const handleUpdateNotice = async (id, updatedData) => {
     try {
+      const { hospital_name, ...dataToSubmit } = updatedData;
+  
       const result = await updateData(
         `http://localhost:5000/notices/${id}`,
-        updatedData
+        dataToSubmit
       );
       console.log("Notice updated:", result);
-
+  
       setNoticeList((prevNotices) =>
         prevNotices.map((notice) =>
           notice.id === id ? { ...notice, ...result.data } : notice

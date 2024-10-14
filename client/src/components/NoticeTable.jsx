@@ -1,7 +1,7 @@
 import React from "react";
 import NoticeTableRows from "./NoticeTableRows";
 
-const NoticeTable = ({ notices, onDelete, onUpdate }) => {
+const NoticeTable = ({ notices, hospitals, onDelete, onUpdate }) => {
     return (
         <table className="w-full">
         <thead>
@@ -19,6 +19,7 @@ const NoticeTable = ({ notices, onDelete, onUpdate }) => {
             <NoticeTableRows 
                 key={notice.id} 
                 notice={notice} 
+                hospitals={hospitals}
                 onDelete={onDelete} 
                 onUpdate={onUpdate} 
             />
