@@ -1,7 +1,7 @@
 const DatabaseDriver = require("../helpers/db");
 
 class PatientModel {
-  static db = () => DatabaseDriver.getInstance().connection;
+    static db = () => DatabaseDriver.getInstance().connection;
 
     static async getAllPatients() {
         try {
@@ -10,7 +10,7 @@ class PatientModel {
             if (rows.length === 0) {
                 return {
                     status: 404,
-                    message: "Patient not found",
+                    message: "No patients found",
                 };
             }
 
@@ -46,203 +46,115 @@ class PatientModel {
             return {
                 status: 200,
                 message: "Patient fetched successfully",
-                data: rows,
+                data: rows[0],
             };
         } catch (err) {
             console.error("Error while fetching patient", err);
             throw {
                 status: 500,
-                message: "Error while fetching patients",
+                message: "Error while fetching patient",
                 error: err.message,
             };
         }
     }
 
-  static async updatePatient(id, patientData, file) {
-    try {
-      const updatedPatient = await this.getPatientById(id);
+    static async createPatient(patient) {
+        try {
+            const fields = Object.keys(patient).join(', ');
+            const values = Object.values(patient);
+            const placeholders = values.map(() => '?').join(', ');
 
-      if (updatedPatient.status !== 200) {
-        return updatedPatient;
-      }
+            const sql = `INSERT INTO patient (${fields}) VALUES (${placeholders})`;
 
-      if (file) {
-        patientData.medical_history = file.buffer.toString("utf-8");
-      }
+            const [result] = await this.db().query(sql, values);
 
-      const [rows, fields] = await this.db().query(
-        "UPDATE patient SET ? WHERE id = ?",
-        [patientData, id]
-      );
-
-      return {
-        status: 200,
-        message: "Patient updated successfully",
-        data: {
-          id: id,
-          ...patientData,
-        },
-      };
-    } catch (err) {
-      console.error("Error while updating patient", err);
-      throw {
-        status: 500,
-        message: "Error while updating patient",
-        error: err.message,
-      };
+            return {
+                status: 201,
+                message: "Patient created successfully",
+                data: {
+                    id: result.insertId,
+                    ...patient,
+                },
+            };
+        } catch (err) {
+            console.error("Error while creating patient", err);
+            throw {
+                status: 500,
+                message: "Error while creating patient",
+                error: err.message,
+            };
+        }
     }
-  }
 
-  static async createPatient(patient) {
-    try {
-      const fields = Object.keys(patient).join(', ');
-      const values = Object.values(patient);
-      const placeholders = values.map(() => '?').join(', ');
+    static async updatePatient(id, patientData, file) {
+        try {
+            const updatedPatient = await this.getPatientById(id);
 
-      const sql = `INSERT INTO patient (${fields}) VALUES (${placeholders})`;
+            if (updatedPatient.status !== 200) {
+                return updatedPatient;
+            }
 
-      const [rows, resultFields] = await this.db().query(sql, values);
+            if (file) {
+                patientData.medical_history = file.buffer.toString("utf-8");
+            }
 
-      if (rows.length === 0) {
-        return {
-          status: 404,
-          message: "Patient not found",
-        };
-      }
+            const [result] = await this.db().query(
+                "UPDATE patient SET ? WHERE id = ?",
+                [patientData, id]
+            );
 
-      return {
-        status: 200,
-        message: "Patients fetched successfully",
-        data: rows,
-      };
-    } catch (err) {
-      console.error("Error while fetching patients", err);
-      throw {
-        status: 500,
-        message: "Error while fetching patients",
-        error: err.message,
-      };
+            return {
+                status: 200,
+                message: "Patient updated successfully",
+                data: {
+                    id: id,
+                    ...patientData,
+                },
+            };
+        } catch (err) {
+            console.error("Error while updating patient", err);
+            throw {
+                status: 500,
+                message: "Error while updating patient",
+                error: err.message,
+            };
+        }
     }
-  }
 
-  static async deletePatient(id) {
-    try {
-      const deletedPatient = await this.getPatientById(id);
+    static async deletePatient(id) {
+        try {
+            const deletedPatient = await this.getPatientById(id);
 
-      await this.db().query("DELETE FROM population WHERE patient_id = ?", [
-        id,
-      ]);
+            if (deletedPatient.status !== 200) {
+                return deletedPatient;
+            }
 
-      if (rows.length === 0) {
-        return {
-          status: 404,
-          message: "Patient not found",
-        };
-      }
+            const [result] = await this.db().query(
+                "DELETE FROM patient WHERE id = ?",
+                [id]
+            );
 
-      return {
-        status: 200,
-        message: "Patient fetched successfully",
-        data: rows,
-      };
-    } catch (err) {
-      console.error("Error while fetching patient", err);
-      throw {
-        status: 500,
-        message: "Error while fetching patients",
-        error: err.message,
-      };
+            if (result.affectedRows === 0) {
+                return {
+                    status: 404,
+                    message: "Patient not found",
+                };
+            }
+
+            return {
+                status: 200,
+                message: "Patient deleted successfully",
+                data: deletedPatient.data,
+            };
+        } catch (err) {
+            console.error("Error while deleting patient", err);
+            throw {
+                status: 500,
+                message: "Error while deleting patient",
+                error: err.message,
+            };
+        }
     }
-  }
-
-  static async updatePatient(id, patient) {
-    try {
-      const updatedPatient = await this.getPatientById(id);
-
-      if (updatedPatient.status !== 200) {
-        return updatedPatient;
-      }
-
-      const [rows, fields] = await this.db().query(
-        "UPDATE patient SET ? WHERE id = ?",
-        [patient, id]
-      );
-
-      return {
-        status: 200,
-        message: "Patient updated successfully",
-        data: {
-          id: id,
-          ...patient,
-        },
-      };
-    } catch (err) {
-      console.error("Error while updating patient", err);
-      throw {
-        status: 500,
-        message: "Error while updating patient",
-        error: err.message,
-      };
-    }
-  }
-
-  static async createPatient(patient, file) {
-    try {
-      patient.medical_history = file.path;
-
-      const [rows, fields] = await this.db().query(
-        "INSERT INTO patient SET ?",
-        patient
-      );
-
-      return {
-        status: 201,
-        message: "Patient created successfully",
-        data: {
-          id: rows.insertId,
-          ...patient,
-        },
-      };
-    } catch (err) {
-      console.error("Error while creating patient", err);
-      throw {
-        status: 500,
-        message: "Error while creating patient",
-        error: err.message,
-      };
-    }
-  }
-
-  static async deletePatient(id) {
-    try {
-      const deletedPatient = await this.getPatientById(id);
-
-      const [rows, fields] = await this.db().query(
-        "DELETE FROM patient WHERE id = ?",
-        [id]
-      );
-
-      if (rows.affectedRows === 0) {
-        return {
-          status: 404,
-          message: "Patient not found",
-        };
-      }
-
-      return {
-        status: 200,
-        message: "Patient deleted successfully",
-        data: deletedPatient.data[0],
-      };
-    } catch (err) {
-      console.error("Error while deleting patient", err);
-      throw {
-        status: 500,
-        message: "Error while deleting patient",
-        error: err.message,
-      };
-    }
-  }
 }
 
 module.exports = PatientModel;
