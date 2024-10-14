@@ -164,7 +164,7 @@ const AccountListHeader = () => {
 
       setAccountList((prevAccounts) =>
         prevAccounts.map((account) =>
-          account.id === id ? { ...account, ...result } : account
+          account.id === id ? { ...account, ...result.data } : account
         )
       );
     } catch (error) {
