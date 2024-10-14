@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PatientListHeaders from "./PatientListHeaders";
+import AccountListHeader from "./AccountListHeader";
 
 const SubNavBarBills = () => {
     const [activeSubNav, setActiveSubNav] = useState(0);
@@ -31,7 +32,7 @@ const SubNavBarBills = () => {
             </div>
             <div className="content">
                 {activeSubNav === 0 && <PatientListHeaders />}{" "}
-                {/* {activeSubNav === 1 && <AccountsListHeaders />}{" "} */}
+                {activeSubNav === 1 && <AccountListHeader />}{" "}
             </div>
         </div>
     );
