@@ -3,7 +3,7 @@ import Logo from "../assets/img/logo.svg";
 import Profile from "../assets/img/profile.svg";
 import SubNavbarSepecialist from "./SubNavbarSepecialist";
 import SubNavbarCenter from "./SubNavBarCenter";
-import SubNavbarBills from "./SubNavbarBills";
+import SubNavbarBills from "./SubNavBarBills";
 
 const Navbar = () => {
   const [activeMenu, setActiveMenu] = useState(0);
