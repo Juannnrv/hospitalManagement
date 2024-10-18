@@ -135,8 +135,13 @@ const StaffListHeader = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
   if (loadingHospitals) return <p>Loading hospitals...</p>;
   if (errorHospitals) return <p>Error loading hospitals: {errorHospitals.message}</p>;
 

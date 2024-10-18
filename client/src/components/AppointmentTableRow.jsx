@@ -1,8 +1,15 @@
 import React, { useState } from "react";
-import person from "../assets/img/person.svg";
+import boy from "../assets/img/boy.svg";
+import girl from "../assets/img/girl.svg";
 import row from "../assets/img/row.svg";
 
-const AppointmentTableRow = ({ appointment, patients, doctors, onDelete, onUpdate }) => {
+const AppointmentTableRow = ({
+  appointment,
+  patients,
+  doctors,
+  onDelete,
+  onUpdate,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     doctor_id: appointment.doctor_id,
@@ -63,7 +70,10 @@ const AppointmentTableRow = ({ appointment, patients, doctors, onDelete, onUpdat
     };
 
     try {
-      const updatedAppointment = await updateAppointment(appointment.id, dataToSubmit);
+      const updatedAppointment = await updateAppointment(
+        appointment.id,
+        dataToSubmit
+      );
       onUpdate(appointment.id, updatedAppointment);
       handleCloseModal();
     } catch (error) {
@@ -76,7 +86,11 @@ const AppointmentTableRow = ({ appointment, patients, doctors, onDelete, onUpdat
       <tr>
         <td className="py-4">
           <div className="flex items-center gap-3">
-            <img src={person} alt={appointment.patient} className="w-50 h-50 rounded-md" />
+            <img
+              src={appointment.gender === "male" ? boy : girl}
+              alt={appointment.name}
+              className="w-50 h-50 rounded-md"
+            />
             <div>
               <div className="font-poppins font-semibold text-sm text-color-5">
                 {appointment.doctor}
@@ -105,8 +119,18 @@ const AppointmentTableRow = ({ appointment, patients, doctors, onDelete, onUpdat
           </span>
         </td>
         <td className="flex py-4 pr-4">
-          <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" onClick={handleOpenModal} />
-          <p className="mt-1 ml-2 cursor-pointer" onClick={() => onDelete(appointment.id)}>🗑️</p>
+          <img
+            src={row}
+            className="w-15 h-15 cursor-pointer"
+            alt="row icon"
+            onClick={handleOpenModal}
+          />
+          <p
+            className="mt-1 ml-2 cursor-pointer"
+            onClick={() => onDelete(appointment.id)}
+          >
+            🗑️
+          </p>
         </td>
       </tr>
 

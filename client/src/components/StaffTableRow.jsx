@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import person from "../assets/img/person.svg";
+import boy from '../assets/img/boy.svg'
+import girl from '../assets/img/girl.svg'
 import row from "../assets/img/row.svg";
 
 const StaffTableRow = ({ staff, hospitals, doctors, onDelete, onUpdate }) => {
@@ -57,7 +58,8 @@ const StaffTableRow = ({ staff, hospitals, doctors, onDelete, onUpdate }) => {
       <tr>
         <td className="py-4">
           <div className="flex items-center gap-3">
-            <img src={person} alt={staff.doctor} className="w-50 h-50 rounded-md" />
+          <img src={ staff.gender === 'male' ? boy : girl} alt={staff.name} className="w-50 h-50 rounded-md" />
+
             <div>
               <div className="font-poppins font-semibold text-sm text-color-5">
                 {staff.doctor}

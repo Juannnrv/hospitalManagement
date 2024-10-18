@@ -46,9 +46,10 @@ class PopulationModel {
       const query = `SELECT 
             p.id,
             p.name as patient,
+            p.status,
+            d.gender as gender,
             d.name as doctor,
-            s.name as doctor_specialty,
-            p.status
+            s.name as doctor_specialty
         FROM
             patient p
         RIGHT JOIN

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import person from "../assets/img/person.svg";
+import boy from "../assets/img/boy.svg";
+import girl from "../assets/img/girl.svg";
 import row from "../assets/img/row.svg";
 
 const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
@@ -14,8 +15,8 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
     phone: patient.phone || "",
     email: patient.email || "",
     status: patient.status || "",
-    age: patient.age || "", // Asegúrate de que age esté inicializado
-    medical_history_file: null, // Añadir campo para el archivo
+    age: patient.age || "", 
+    medical_history_file: null, 
   });
   const [submitError, setSubmitError] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
@@ -37,7 +38,7 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
       const file = files[0];
       setFormData((prevData) => ({
         ...prevData,
-        medical_history_file: file, // Guarda el archivo aquí
+        medical_history_file: file, 
       }));
     } else {
       setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -52,7 +53,7 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
     if (!formData.email) errors.email = "Email is required";
     if (!formData.status) errors.status = "Status is required";
     if (!Number.isInteger(Number(formData.age)))
-      errors.age = "Age must be an integer"; 
+      errors.age = "Age must be an integer";
     return errors;
   };
 
@@ -144,7 +145,7 @@ const PatientTableRow = ({ patient, onDelete, onUpdate }) => {
         <td className="py-4">
           <div className="flex items-center gap-3">
             <img
-              src={person}
+              src={patient.gender === "male" ? boy : girl}
               alt={patient.name}
               className="w-50 h-50 rounded-md"
             />

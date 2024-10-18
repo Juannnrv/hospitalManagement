@@ -1,14 +1,21 @@
 import React, { useState } from "react";
+import boy from "../assets/img/boy.svg";
+import girl from "../assets/img/girl.svg";
 import row from "../assets/img/row.svg";
-import person from "../assets/img/person.svg";
 
-const AccountTableRow = ({ account, onDelete, onUpdate, hospitals, patients }) => {
+const AccountTableRow = ({
+  account,
+  onDelete,
+  onUpdate,
+  hospitals,
+  patients,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     patient_id: account.patient_id,
     hospital_id: account.hospital_id,
-    date: account.date ? account.date.split('T')[0] : '',
+    date: account.date ? account.date.split("T")[0] : "",
     price: account.price,
     description: account.description,
   });
@@ -108,8 +115,8 @@ const AccountTableRow = ({ account, onDelete, onUpdate, hospitals, patients }) =
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = String(date.getFullYear()).slice(-2);
     return `${day}/${month}/${year}`;
   };
@@ -121,10 +128,10 @@ const AccountTableRow = ({ account, onDelete, onUpdate, hospitals, patients }) =
           {account.id}
         </td>
         <td className="py-4 pr-4">
-        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <img
-              src={person}
-              alt={account.patient_name}
+              src={account.patient_gender === "male" ? boy : girl}
+              alt={account.name}
               className="w-50 h-50 rounded-md"
             />
             <div>
@@ -153,8 +160,15 @@ const AccountTableRow = ({ account, onDelete, onUpdate, hospitals, patients }) =
           </div>
         </td>
         <td className="flex py-4 pr-4">
-          <img src={row} className="w-15 h-15 cursor-pointer" alt="row icon" onClick={handleOpenModal} />
-          <p className="mt-1 ml-2 cursor-pointer" onClick={handleDelete}>🗑️</p>
+          <img
+            src={row}
+            className="w-15 h-15 cursor-pointer"
+            alt="row icon"
+            onClick={handleOpenModal}
+          />
+          <p className="mt-1 ml-2 cursor-pointer" onClick={handleDelete}>
+            🗑️
+          </p>
         </td>
       </tr>
 

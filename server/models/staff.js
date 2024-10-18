@@ -46,6 +46,7 @@ class StaffModel {
           d.id AS doctor_id,
           h.name AS hospital,
           d.name AS doctor,
+          d.gender AS gender,
           sp.name AS specialty
       FROM 
           hospital h
