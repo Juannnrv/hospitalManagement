@@ -21,6 +21,16 @@ app.use(cors(
 
 DatabaseDriver.getInstance();
 
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        console.clear();
+        console.log(err.message);
+        return res.status(400).json({ status: 400, message: 'Json sent does not comply with the required formatting' })
+    }
+
+    next();
+});
+
 app.use('/doctors', doctorRoutes);
 app.use('/patients', patientRoutes);
 app.use('/hospitals', hospitalRoutes)

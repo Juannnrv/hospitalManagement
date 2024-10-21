@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev:back": "node --env-file .env --watch server.js",
+    "dev:back": "node --env-file .env server.js",
     "dev:front": "vite",
     "dev": "concurrently \"npm run dev:front\" \"npm run dev:back\"",
     "build": "vite build",
